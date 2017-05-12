@@ -52,7 +52,7 @@ module.exports = function (app, model, Implementation, integrator, opts) {
       omitNullAttributes: true
     }).perform()
       .then(function (params) {
-        return new Implementation.ResourceCreator(model, params).perform();
+        return new Implementation.ResourceCreator(model, params, req).perform();
       })
       .then(function (record) {
         return new ResourceSerializer(Implementation, model, record,
@@ -68,7 +68,7 @@ module.exports = function (app, model, Implementation, integrator, opts) {
     new ResourceDeserializer(Implementation, model, req.body, false)
       .perform()
       .then(function (record) {
-        new Implementation.ResourceUpdater(model, req.params, record)
+        new Implementation.ResourceUpdater(model, req.params, record, req)
           .perform()
           .then(function (record) {
             return new ResourceSerializer(Implementation, model, record,
@@ -83,7 +83,7 @@ module.exports = function (app, model, Implementation, integrator, opts) {
   };
 
   this.remove = function (req, res, next) {
-    new Implementation.ResourceRemover(model, req.params)
+    new Implementation.ResourceRemover(model, req.params, req)
       .perform()
       .then(function () {
         res.status(204).send();
