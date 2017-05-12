@@ -63,7 +63,7 @@ module.exports = function (app, model, Implementation, integrator, opts) {
     });
 
     return new Implementation.HasManyAssociator(model, associationModel, opts,
-      params, data)
+      params, data, request)
       .perform()
       .then(function () { response.status(204).send(); })
       .catch(next);
@@ -79,7 +79,7 @@ module.exports = function (app, model, Implementation, integrator, opts) {
     });
 
     return new Implementation.HasManyDissociator(model, associationModel, opts,
-      params, data)
+      params, data, request)
       .perform()
       .then(function () { response.status(204).send(); })
       .catch(next);
