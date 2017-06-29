@@ -3,6 +3,13 @@ var _ = require('lodash');
 var moment = require('moment');
 var JSONAPISerializer = require('jsonapi-serializer').Serializer;
 var Schemas = require('../generators/schemas');
+var logger = require('../services/logger');
+
+function toKebabCase(string) {
+  // NOTICE: Support for the collections beginning with an underscore.
+  if (string[0] === '_') { return '_' + _.kebabCase(string); }
+  return _.kebabCase(string);
+}
 
 function ResourceSerializer(Implementation, model, records, integrator,
   opts, meta) {
@@ -46,9 +53,15 @@ function ResourceSerializer(Implementation, model, records, integrator,
 
             getAttributesFor(dest[field.field], field.type.fields);
           } else if (field.reference) {
-            var referenceType = typeForAttributes[field.field] =
-              field.reference.split('.')[0];
+            var referenceType = field.reference.split('.')[0];
             var referenceSchema = Schemas.schemas[referenceType];
+            typeForAttributes[field.field] = toKebabCase(referenceType);
+
+            if (!referenceSchema) {
+              logger.error('Cannot find the \'' + referenceType +
+              '\' reference field for \'' + schema.name + '\' collection.');
+              return;
+            }
 
             dest[fieldName] = {
               ref: referenceSchema.idField,
@@ -108,7 +121,8 @@ function ResourceSerializer(Implementation, model, records, integrator,
       formatDateonly(records);
     }
 
-    return new JSONAPISerializer(schema.name, records, serializationOptions);
+    var typeName = toKebabCase(schema.name);
+    return new JSONAPISerializer(typeName, records, serializationOptions);
   };
 }
 
